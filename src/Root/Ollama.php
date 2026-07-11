@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AiSdk;
 
+use AiSdk\Contracts\EmbeddingModelInterface;
 use AiSdk\Contracts\ImageModelInterface;
 use AiSdk\Contracts\TextModelInterface;
 use AiSdk\Ollama\OllamaOptions;
@@ -39,6 +40,11 @@ final class Ollama
     public static function image(string $modelId): ImageModelInterface
     {
         return self::default()->imageModel($modelId);
+    }
+
+    public static function embedding(string $modelId): EmbeddingModelInterface
+    {
+        return self::default()->embeddingModel($modelId);
     }
 
     /** @return array<int, ModelDefinition> */

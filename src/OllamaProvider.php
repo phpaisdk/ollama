@@ -7,6 +7,8 @@ namespace AiSdk\Ollama;
 use AiSdk\Capability;
 use AiSdk\Contracts\AvailableModelsProviderInterface;
 use AiSdk\Contracts\BaseProvider;
+use AiSdk\Contracts\EmbeddingModelInterface;
+use AiSdk\Contracts\EmbeddingProviderInterface;
 use AiSdk\Contracts\ImageModelInterface;
 use AiSdk\Contracts\ImageProviderInterface;
 use AiSdk\Contracts\ModelInspectionProviderInterface;
@@ -14,12 +16,13 @@ use AiSdk\Contracts\TextModelInterface;
 use AiSdk\Contracts\TextProviderInterface;
 use AiSdk\Generate;
 use AiSdk\ModelDefinition;
+use AiSdk\Ollama\Models\OllamaEmbeddingModel;
 use AiSdk\Ollama\Models\OllamaImageModel;
 use AiSdk\Ollama\Models\OllamaTextModel;
 use AiSdk\Utils\Http\HttpRunner;
 use AiSdk\Utils\Support\Url;
 
-final class OllamaProvider extends BaseProvider implements AvailableModelsProviderInterface, ImageProviderInterface, ModelInspectionProviderInterface, TextProviderInterface
+final class OllamaProvider extends BaseProvider implements AvailableModelsProviderInterface, EmbeddingProviderInterface, ImageProviderInterface, ModelInspectionProviderInterface, TextProviderInterface
 {
     public function __construct(public readonly OllamaOptions $options) {}
 
@@ -36,6 +39,11 @@ final class OllamaProvider extends BaseProvider implements AvailableModelsProvid
     public function imageModel(string $modelId): ImageModelInterface
     {
         return new OllamaImageModel($modelId, $this->options);
+    }
+
+    public function embeddingModel(string $modelId): EmbeddingModelInterface
+    {
+        return new OllamaEmbeddingModel($modelId, $this->options);
     }
 
     public function availableModels(): array
@@ -124,6 +132,7 @@ final class OllamaProvider extends BaseProvider implements AvailableModelsProvid
             'thinking' => Capability::Reasoning,
             'image' => Capability::ImageGeneration,
             'image_generation' => Capability::ImageGeneration,
+            'embedding' => Capability::Embedding,
         ];
 
         foreach ($optional as $native => $capability) {

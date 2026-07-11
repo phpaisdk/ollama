@@ -1,6 +1,6 @@
 # aisdk/ollama
 
-Official Ollama provider for the framework-agnostic PHP AI SDK. It supports text, streaming, and Ollama's experimental OpenAI-compatible image endpoint.
+Official Ollama provider for the framework-agnostic PHP AI SDK. It supports text, streaming, native embeddings, and Ollama's experimental OpenAI-compatible image endpoint.
 
 ## Installation
 
@@ -36,7 +36,7 @@ foreach ($models as $model) {
 }
 ```
 
-`availableModels()` calls Ollama's native `/api/tags` endpoint. To load a model's optional capabilities—such as vision, tools, audio input, or thinking—inspect it explicitly:
+`availableModels()` calls Ollama's native `/api/tags` endpoint. To load a model's optional capabilities—such as embeddings, vision, tools, audio input, or thinking—inspect it explicitly:
 
 ```php
 $definition = Ollama::inspectModel('your-installed-model');
@@ -47,6 +47,29 @@ if (in_array('image_input', $definition->capabilityNames(), true)) {
 ```
 
 Inspection calls `/api/show` and returns informational details reported by the current Ollama server. It does not change adapter behavior, and ordinary generation does not perform hidden discovery requests.
+
+## Embeddings
+
+Ollama embeddings use the native `/api/embed` endpoint and accept one text or a batch:
+
+```php
+use AiSdk\Generate;
+use AiSdk\Ollama;
+
+$result = Generate::embedding(['Search query', 'Document text'])
+    ->model(Ollama::embedding('embeddinggemma'))
+    ->dimensions(256)
+    ->providerOptions('ollama', [
+        'truncate' => false,
+        'keep_alive' => '10m',
+    ])
+    ->run();
+
+$queryVector = $result->embeddings[0]->vector;
+$documentVector = $result->embeddings[1]->vector;
+```
+
+`truncate` and `keep_alive` are passed to Ollama unchanged. The selected installed model remains the authority on supported output dimensions.
 
 ## Image generation
 
@@ -77,7 +100,7 @@ No API key is required for a local Ollama server. Provide one only if your serve
 | Variable | Description | Default |
 |---|---|---|
 | `OLLAMA_BASE_URL` | Base URL for the OpenAI-compatible API | `http://localhost:11434/v1` |
-| `OLLAMA_NATIVE_BASE_URL` | Base URL for native discovery endpoints | Derived by removing `/v1` from `OLLAMA_BASE_URL` |
+| `OLLAMA_NATIVE_BASE_URL` | Base URL for native API endpoints | Derived by removing `/v1` from `OLLAMA_BASE_URL` |
 | `OLLAMA_API_KEY` | Optional bearer token | — |
 
 ```php
@@ -92,3 +115,8 @@ Ollama::create([
 ```bash
 composer test
 ```
+
+## Links
+
+- [Ollama Embed API](https://docs.ollama.com/api/embed)
+- [Core Package](https://github.com/phpaisdk/core)
