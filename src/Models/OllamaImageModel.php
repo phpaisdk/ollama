@@ -6,6 +6,7 @@ namespace AiSdk\Ollama\Models;
 
 use AiSdk\Contracts\BaseModel;
 use AiSdk\Contracts\ImageModelInterface;
+use AiSdk\Exceptions\InvalidResponseException;
 use AiSdk\Ollama\OllamaOptions;
 use AiSdk\OpenAICompatible\ImageRequestBuilder;
 use AiSdk\OpenAICompatible\ImageResponseParser;
@@ -31,13 +32,33 @@ final class OllamaImageModel extends BaseModel implements ImageModelInterface
 
     public function generate(ImageRequest $request): ImageResponse
     {
-        $body = ImageRequestBuilder::build($this->modelId, $this->provider(), $request);
+        $body = ImageRequestBuilder::build($this->modelId, $this->provider(), $request, [
+            'includeCount' => false,
+            'includeProviderOptions' => false,
+            'seedParameter' => null,
+        ]);
+        $body = array_intersect_key($body, [
+            'model' => true,
+            'prompt' => true,
+            'size' => true,
+            'response_format' => true,
+        ]);
+        $body['size'] ??= '1024x1024';
+
         $payload = $this->runner($this->options->sdk)->postJson(
             Url::joinPath($this->options->baseUrl, '/images/generations'),
             $body,
             $this->options->authHeaders(),
             $this->provider(),
         );
+
+        if (! is_array($payload['data'] ?? null)) {
+            throw InvalidResponseException::forProvider(
+                $this->provider(),
+                sprintf('Provider [%s] returned no generated images.', $this->provider()),
+                ['body' => $payload],
+            );
+        }
 
         return ImageResponseParser::parse($payload, $this->provider());
     }
