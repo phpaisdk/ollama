@@ -24,6 +24,19 @@ echo $result->text;
 
 Any model installed on the configured Ollama server can be selected. Like every AI SDK provider package, this package treats model IDs as opaque provider values and does not ship a model inventory.
 
+Ollama's OpenAI-compatible Chat Completions endpoint is the default. Select the Responses endpoint globally or per request when needed:
+
+```php
+Ollama::create(['api' => 'responses']);
+
+$result = Generate::text('Explain this code.')
+    ->model(Ollama::model('your-installed-model'))
+    ->providerOptions('ollama', ['api' => 'responses'])
+    ->run();
+```
+
+Supported values are `chat_completions` and `responses`. Chat Completions supports Ollama's documented vision, function tools, reasoning effort, and structured-output fields. Ollama Responses supports streaming and function tools, but its documented request fields do not currently expose reasoning or structured-output controls. The selected installed model remains responsible for accepting model-dependent features.
+
 ## Available models
 
 Read the current server registry instead of relying on package data:
@@ -119,4 +132,5 @@ composer test
 ## Links
 
 - [Ollama Embed API](https://docs.ollama.com/api/embed)
+- [Ollama OpenAI compatibility](https://docs.ollama.com/api/openai-compatibility)
 - [Core Package](https://github.com/phpaisdk/core)

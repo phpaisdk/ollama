@@ -19,6 +19,7 @@ final class OllamaOptions
      */
     public function __construct(
         public readonly ?string $apiKey,
+        public readonly OllamaApi $api = OllamaApi::ChatCompletions,
         public readonly string $baseUrl = self::DEFAULT_BASE_URL,
         public readonly string $nativeBaseUrl = 'http://localhost:11434',
         public readonly array $headers = [],
@@ -31,6 +32,7 @@ final class OllamaOptions
     public static function fromArray(array $config = []): self
     {
         $apiKey = Env::loadOptionalSetting(isset($config['apiKey']) ? (string) $config['apiKey'] : null, 'OLLAMA_API_KEY');
+        $api = OllamaApi::resolve($config['api'] ?? null);
 
         $baseUrl = Url::withoutTrailingSlash(
             Env::loadOptionalSetting(isset($config['baseUrl']) ? (string) $config['baseUrl'] : null, 'OLLAMA_BASE_URL')
@@ -48,6 +50,7 @@ final class OllamaOptions
 
         return new self(
             apiKey: ($apiKey !== null && $apiKey !== '') ? $apiKey : null,
+            api: $api,
             baseUrl: $baseUrl,
             nativeBaseUrl: $nativeBaseUrl,
             headers: $headers,

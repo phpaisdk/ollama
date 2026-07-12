@@ -115,3 +115,72 @@ it('inspects optional capabilities without changing adapter behavior', function 
         ->and($client->lastRequest?->getUri()->getPath())->toBe('/api/show')
         ->and($client->sentBody())->toBe(['model' => 'private/model:latest', 'verbose' => false]);
 });
+
+it('generates text through the Ollama Responses API', function () {
+    $client = new FakeHttpClient(200, json_encode([
+        'id' => 'resp_ollama',
+        'status' => 'completed',
+        'model' => 'llama3.2',
+        'output' => [[
+            'type' => 'message',
+            'content' => [['type' => 'output_text', 'text' => 'Hello from Responses']],
+        ]],
+        'usage' => ['input_tokens' => 2, 'output_tokens' => 3, 'total_tokens' => 5],
+    ]));
+    configureOllamaWith($client);
+    Ollama::create(['api' => 'responses']);
+
+    $result = Generate::text('Hi')->model(Ollama::model('llama3.2'))->run();
+
+    expect($result->text)->toBe('Hello from Responses')
+        ->and($client->lastRequest->getUri()->getPath())->toBe('/v1/responses')
+        ->and($client->sentBody())->toHaveKey('input')->not->toHaveKeys(['messages', 'api']);
+});
+
+it('allows per-request Ollama API selection', function () {
+    $client = new FakeHttpClient(200, json_encode([
+        'id' => 'resp_ollama',
+        'status' => 'completed',
+        'output' => [['type' => 'message', 'content' => [['type' => 'output_text', 'text' => 'Done']]]],
+    ]));
+    configureOllamaWith($client);
+    Ollama::create();
+
+    Generate::text('Hi')
+        ->model(Ollama::model('llama3.2'))
+        ->providerOptions('ollama', ['api' => 'responses'])
+        ->run();
+
+    expect($client->lastRequest->getUri()->getPath())->toBe('/v1/responses');
+});
+
+it('serializes documented Ollama vision and reasoning fields', function () {
+    $client = new FakeHttpClient(200, json_encode([
+        'choices' => [['message' => ['content' => 'Done'], 'finish_reason' => 'stop']],
+    ]));
+    configureOllamaWith($client);
+    Ollama::create();
+
+    Generate::text()
+        ->model(Ollama::model('vision-model'))
+        ->messages([\AiSdk\Message::user([
+            \AiSdk\Content::text('Describe this image'),
+            \AiSdk\Content::image('https://example.com/image.png'),
+        ])])
+        ->reasoning(\AiSdk\Reasoning::effort('low'))
+        ->run();
+
+    expect($client->sentBody()['messages'][0]['content'][1]['type'])->toBe('image_url')
+        ->and($client->sentBody()['reasoning_effort'])->toBe('low');
+});
+
+it('rejects controls that Ollama Responses does not document', function () {
+    $client = new FakeHttpClient(200, '{}');
+    configureOllamaWith($client);
+    Ollama::create(['api' => 'responses']);
+
+    Generate::text('Think')
+        ->model(Ollama::model('thinking-model'))
+        ->reasoning(\AiSdk\Reasoning::effort('low'))
+        ->run();
+})->throws(\AiSdk\Exceptions\InvalidArgumentException::class, 'Ollama Responses does not expose reasoning controls');
