@@ -31,17 +31,17 @@ final class OllamaProvider extends BaseProvider implements AvailableModelsProvid
         return OllamaOptions::PROVIDER_NAME;
     }
 
-    public function textModel(string $modelId): TextModelInterface
+    protected function textModel(string $modelId): TextModelInterface
     {
         return new OllamaTextModel($modelId, $this->options);
     }
 
-    public function imageModel(string $modelId): ImageModelInterface
+    protected function imageModel(string $modelId): ImageModelInterface
     {
         return new OllamaImageModel($modelId, $this->options);
     }
 
-    public function embeddingModel(string $modelId): EmbeddingModelInterface
+    protected function embeddingModel(string $modelId): EmbeddingModelInterface
     {
         return new OllamaEmbeddingModel($modelId, $this->options);
     }

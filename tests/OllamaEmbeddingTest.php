@@ -26,7 +26,7 @@ it('generates embeddings through the native Ollama endpoint', function () {
     Ollama::create(['baseUrl' => 'http://localhost:11434/v1']);
 
     $result = Generate::embedding(['First document', 'Second document'])
-        ->model(Ollama::embedding('embeddinggemma'))
+        ->model(Ollama::model('embeddinggemma'))
         ->dimensions(256)
         ->providerOptions('ollama', ['truncate' => false, 'keep_alive' => '10m'])
         ->run();
@@ -54,6 +54,6 @@ it('rejects incomplete Ollama embedding batches', function () {
     Ollama::create(['baseUrl' => 'http://localhost:11434/v1']);
 
     Generate::embedding(['First document', 'Second document'])
-        ->model(Ollama::embedding('embeddinggemma'))
+        ->model(Ollama::model('embeddinggemma'))
         ->run();
 })->throws(\AiSdk\Exceptions\InvalidResponseException::class, 'unexpected number of embeddings');

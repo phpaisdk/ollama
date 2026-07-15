@@ -70,7 +70,7 @@ use AiSdk\Generate;
 use AiSdk\Ollama;
 
 $result = Generate::embedding(['Search query', 'Document text'])
-    ->model(Ollama::embedding('embeddinggemma'))
+    ->model(Ollama::model('embeddinggemma'))
     ->dimensions(256)
     ->providerOptions('ollama', [
         'truncate' => false,
@@ -88,7 +88,7 @@ $documentVector = $result->embeddings[1]->vector;
 
 ```php
 $image = Generate::image('A small robot')
-    ->model(Ollama::image('your-installed-image-model'))
+    ->model(Ollama::model('your-installed-image-model'))
     ->size('1024x1024')
     ->run();
 ```

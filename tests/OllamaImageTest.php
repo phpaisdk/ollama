@@ -23,7 +23,7 @@ it('generates images through Ollamas experimental OpenAI-compatible endpoint', f
     Ollama::create();
 
     $result = Generate::image('A tiny robot')
-        ->model(Ollama::image('x/z-image-turbo'))
+        ->model(Ollama::model('x/z-image-turbo'))
         ->count(2)
         ->size('1024x1024')
         ->seed(42)
@@ -54,7 +54,7 @@ it('generates images through Ollamas experimental OpenAI-compatible endpoint', f
 it('allows arbitrary installed Ollama image models', function () {
     Ollama::create();
 
-    expect(Ollama::image('acme/private-image-model')->modelId())->toBe('acme/private-image-model');
+    expect(Ollama::model('acme/private-image-model')->modelId())->toBe('acme/private-image-model');
 });
 
 it('defaults experimental image requests to Ollamas required size', function () {
@@ -66,7 +66,7 @@ it('defaults experimental image requests to Ollamas required size', function () 
     Ollama::create();
 
     Generate::image('A tiny robot')
-        ->model(Ollama::image('x/z-image-turbo'))
+        ->model(Ollama::model('x/z-image-turbo'))
         ->run();
 
     expect($client->sentBody())->toBe([
@@ -84,7 +84,7 @@ it('rejects malformed or empty experimental image responses', function (array $r
     Ollama::create();
 
     Generate::image('A tiny robot')
-        ->model(Ollama::image('x/z-image-turbo'))
+        ->model(Ollama::model('x/z-image-turbo'))
         ->run();
 })->with([
     'empty data' => [['data' => []]],
