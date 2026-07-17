@@ -137,8 +137,13 @@ Ollama::create([
 composer test
 ```
 
-## Links
+## Documentation
 
-- [Ollama Embed API](https://docs.ollama.com/api/embed)
-- [Ollama OpenAI compatibility](https://docs.ollama.com/api/openai-compatibility)
-- [Core Package](https://github.com/phpaisdk/core)
+- [PHP AI SDK documentation](https://phpaisdk.com/docs)
+- [Ollama documentation](https://phpaisdk.com/docs/ollama)
+
+## Community
+
+- [Contributing](https://github.com/phpaisdk/.github/blob/main/CONTRIBUTING.md)
+- [Support](https://github.com/phpaisdk/.github/blob/main/SUPPORT.md)
+- For private security reports, email [security@phpaisdk.com](mailto:security@phpaisdk.com).
