@@ -1,149 +1,35 @@
-# aisdk/ollama
+# PHP AI SDK — Ollama
 
-<a href="https://github.com/phpaisdk/ollama/actions"><img alt="GitHub Workflow Status" src="https://img.shields.io/github/actions/workflow/status/phpaisdk/ollama/tests.yml?branch=main&label=Tests"></a>
-<a href="https://packagist.org/packages/aisdk/ollama"><img alt="Total Downloads" src="https://img.shields.io/packagist/dt/aisdk/ollama"></a>
-<a href="https://packagist.org/packages/aisdk/ollama"><img alt="Latest Version" src="https://img.shields.io/packagist/v/aisdk/ollama"></a>
-<a href="https://packagist.org/packages/aisdk/ollama"><img alt="License" src="https://img.shields.io/packagist/l/aisdk/ollama"></a>
-<a href="https://whyphp.dev"><img src="https://img.shields.io/badge/Why_PHP-in_2026-7A86E8?style=flat-square&labelColor=18181b" alt="Why PHP in 2026"></a>
-
-------
-
-Official Ollama provider for the framework-agnostic PHP AI SDK. It supports text, streaming, native embeddings, and Ollama's experimental OpenAI-compatible image endpoint.
+Run local models with the framework-agnostic [PHP AI SDK](https://phpaisdk.com). Supports text generation, streaming, tools, structured output, and embeddings.
 
 ## Installation
 
 ```bash
 composer require aisdk/ollama
+ollama pull qwen3.8
 ```
 
-## Basic Usage
+Start Ollama locally. The default endpoint is `http://localhost:11434/v1`; set `OLLAMA_BASE_URL` to use another server.
+
+## Usage
 
 ```php
 use AiSdk\Generate;
 use AiSdk\Ollama;
 
-$result = Generate::text()
-    ->model(Ollama::model('your-installed-model'))
-    ->prompt('Explain closures in PHP.')
+$result = Generate::text('Explain closures in PHP in one sentence.')
+    ->model(Ollama::model('qwen3.8'))
     ->run();
 
 echo $result->text;
 ```
 
-Any model installed on the configured Ollama server can be selected. Like every AI SDK provider package, this package treats model IDs as opaque provider values and does not ship a model inventory.
-
-Ollama's OpenAI-compatible Chat Completions endpoint is the default. Select the Responses endpoint globally or per request when needed:
-
-```php
-Ollama::create(['api' => 'responses']);
-
-$result = Generate::text('Explain this code.')
-    ->model(Ollama::model('your-installed-model'))
-    ->providerOptions('ollama', ['api' => 'responses'])
-    ->run();
-```
-
-Supported values are `chat_completions` and `responses`. Chat Completions supports Ollama's documented vision, function tools, reasoning effort, and structured-output fields. Ollama Responses supports streaming and function tools, but its documented request fields do not currently expose reasoning or structured-output controls. The selected installed model remains responsible for accepting model-dependent features.
-
-## Available models
-
-Read the current server registry instead of relying on package data:
-
-```php
-$models = Ollama::availableModels();
-
-foreach ($models as $model) {
-    echo $model->id;
-}
-```
-
-`availableModels()` calls Ollama's native `/api/tags` endpoint. To load a model's optional capabilities—such as embeddings, vision, tools, audio input, or thinking—inspect it explicitly:
-
-```php
-$definition = Ollama::inspectModel('your-installed-model');
-
-if (in_array('image_input', $definition->capabilityNames(), true)) {
-    // The installed model advertises vision support.
-}
-```
-
-Inspection calls `/api/show` and returns informational details reported by the current Ollama server. It does not change adapter behavior, and ordinary generation does not perform hidden discovery requests.
-
-## Embeddings
-
-Ollama embeddings use the native `/api/embed` endpoint and accept one text or a batch:
-
-```php
-use AiSdk\Generate;
-use AiSdk\Ollama;
-
-$result = Generate::embedding(['Search query', 'Document text'])
-    ->model(Ollama::model('embeddinggemma'))
-    ->dimensions(256)
-    ->providerOptions('ollama', [
-        'truncate' => false,
-        'keep_alive' => '10m',
-    ])
-    ->run();
-
-$queryVector = $result->embeddings[0]->vector;
-$documentVector = $result->embeddings[1]->vector;
-```
-
-`truncate` and `keep_alive` are passed to Ollama unchanged. The selected installed model remains the authority on supported output dimensions.
-
-## Image generation
-
-```php
-$image = Generate::image('A small robot')
-    ->model(Ollama::model('your-installed-image-model'))
-    ->size('1024x1024')
-    ->run();
-```
-
-Image generation is experimental in Ollama. Ollama does not currently expose an OpenAI-compatible speech endpoint, so this package intentionally does not implement `Generate::speech()`.
-
-## Streaming
-
-```php
-use AiSdk\Generate;
-use AiSdk\Ollama;
-
-foreach (Generate::text('Tell me a story.')->model(Ollama::model('your-installed-model'))->stream()->chunks() as $chunk) {
-    echo $chunk;
-}
-```
-
-## Configuration
-
-No API key is required for a local Ollama server. Provide one only if your server is protected.
-
-| Variable | Description | Default |
-|---|---|---|
-| `OLLAMA_BASE_URL` | Base URL for the OpenAI-compatible API | `http://localhost:11434/v1` |
-| `OLLAMA_NATIVE_BASE_URL` | Base URL for native API endpoints | Derived by removing `/v1` from `OLLAMA_BASE_URL` |
-| `OLLAMA_API_KEY` | Optional bearer token | — |
-
-```php
-Ollama::create([
-    'baseUrl' => 'http://localhost:11434/v1',
-    'nativeBaseUrl' => 'http://localhost:11434',
-]);
-```
-
-## Testing
-
-```bash
-composer test
-```
-
 ## Documentation
 
-- [PHP AI SDK documentation](https://phpaisdk.com/docs)
-- [Ollama documentation](https://phpaisdk.com/docs/ollama)
+[Read the documentation](https://phpaisdk.com/docs/0.x/providers/ollama) for configuration, supported features, and more examples.
 
-## Community
+[Contributing](https://github.com/phpaisdk/.github/blob/main/CONTRIBUTING.md) · [Support](https://github.com/phpaisdk/.github/blob/main/SUPPORT.md)
 
-- [Contributing](https://github.com/phpaisdk/.github/blob/main/CONTRIBUTING.md)
-- [Support](https://github.com/phpaisdk/.github/blob/main/SUPPORT.md)
-- For private security reports, email [security@phpaisdk.com](mailto:security@phpaisdk.com).
+## License
+
+The MIT License (MIT). See [LICENSE](LICENSE) for details.
